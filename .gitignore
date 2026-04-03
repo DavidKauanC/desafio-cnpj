@@ -1,0 +1,8 @@
+venv/
+
+dados_raw/
+*.duckdb
+*.duckdb.wal
+
+__pycache__/
+.streamlit/
