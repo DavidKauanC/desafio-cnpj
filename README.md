@@ -42,7 +42,7 @@ Siga os passos de acordo com o seu sistema operacional para configurar o ambient
 Abra o seu terminal e execute:
 ```bash
 git clone https://github.com/DavidKauanC/desafio-cnpj.git
-cd seu-repositorio
+cd desafio-cnpj
 ```
 
 ---
