@@ -4,14 +4,15 @@ Este projeto foi desenvolvido como parte do desafio técnico para o projeto Céo
 
 ## Funcionalidades
 
-- **Download Automatizado**: Recuperação resiliente dos arquivos ZIP do servidor oficial da Receita Federal.
+- **Gerenciador Interativo**: Interface via terminal para orquestrar o download, a ingestão e a visualização dos dados em um único ponto.
+- **Download Automatizado**: Recuperação resiliente dos arquivos ZIP do servidor oficial da Receita Federal (opcional, caso os dados já estejam no disco).
 - **Ingestão Otimizada**: Processamento de milhões de registros com controle dinâmico de memória RAM (limite de 85% do disponível) para evitar travamentos do sistema durante a carga.
 - **Tradução de Metadados**: Conversão automática de códigos numéricos (CNAE, Motivos de Situação, Natureza Jurídica) para descrições textuais legíveis.
 - **Interface Analítica**: Dashboard interativo com filtros avançados por UF, Município, Porte e Situação Cadastral.
 
 ## Tecnologias Utilizadas
 
-- **Linguagem**: Python 3.12
+- **Linguagem**: Python 3.14.3
 - **Banco de Dados**: DuckDB (Processamento analítico em disco de alta performance)
 - **Interface**: Streamlit
 - **Bibliotecas Auxiliares**: psutil e tqdm
@@ -25,50 +26,63 @@ Este projeto foi desenvolvido como parte do desafio técnico para o projeto Céo
 │   ├── download.py     # Script de coleta de dados
 │   ├── ingestao.py     # Pipeline de ETL e estruturação do banco
 │   └── app.py          # Interface Web e lógica de consulta
+├── main.py             # Menu interativo do sistema (Gerenciador)
 ├── requirements.txt    # Lista de dependências do projeto
-└── .gitignore          # Configuração para evitar upload de dados sensíveis/pesados
+└── .gitignore          # Configuração para evitar upload de dados pesados
 ```
 
 ## Como Executar
 
-### 1. Clonar o repositório
+Siga os passos de acordo com o seu sistema operacional para configurar o ambiente e iniciar a aplicação.
+
+### Passo 1: Clonar o repositório (Todos os sistemas)
+Abra o seu terminal e execute:
 ```bash
-git clone https://github.com/seu-usuario/seu-repositorio.git
+git clone [https://github.com/seu-usuario/seu-repositorio.git](https://github.com/seu-usuario/seu-repositorio.git)
 cd seu-repositorio
 ```
 
-### 2. Configurar o ambiente Python
-Crie e ative um ambiente virtual:
+---
 
-**Linux/macOS:**
+### Passo 2: Configurar e Executar no Linux / macOS
+Abra o terminal na pasta do projeto e execute os comandos abaixo sequencialmente:
+
 ```bash
+# 1. Criar e ativar o ambiente virtual
 python3 -m venv venv
 source venv/bin/activate
+
+# 2. Instalar as dependências
 pip install -r requirements.txt
+
+# 3. Executar o Gerenciador do Sistema
+python3 main.py
 ```
 
-**Windows:**
+---
+
+### Passo 2: Configurar e Executar no Windows
+Abra o Prompt de Comando (CMD) ou PowerShell na pasta do projeto e execute os comandos abaixo sequencialmente:
+
 ```cmd
+# 1. Criar e ativar o ambiente virtual
 python -m venv venv
 venv\Scripts\activate
+
+# 2. Instalar as dependências
 pip install -r requirements.txt
+
+# 3. Executar o Gerenciador do Sistema
+python main.py
 ```
 
-### 3. Executar o Pipeline de Dados
-A coleta e a estruturação dos dados podem levar tempo dependendo do hardware e da velocidade de conexão com a internet.
+---
 
-```bash
-# Passo 1: Download dos arquivos ZIP
-python src/download.py
-
-# Passo 2: Ingestão e criação do banco no DuckDB
-python src/ingestao.py
-```
-
-### 4. Iniciar a Interface de Consulta
-```bash
-streamlit run src/app.py
-```
+### Passo 3: Utilizando o Sistema
+Ao executar o `main.py`, um menu interativo será exibido no terminal:
+1. **Baixar dados:** Executa a raspagem dos arquivos ZIP (Opcional se os arquivos já estiverem na pasta `dados_raw`).
+2. **Processar e Ingerir:** Cria o banco de dados `banco_cnpj.duckdb` estruturando as informações.
+3. **Iniciar Painel:** Abre a interface gráfica do Streamlit no seu navegador padrão.
 
 ## Declaração de Uso de IA
 
