@@ -12,7 +12,7 @@ Este projeto foi desenvolvido como parte do desafio técnico para o projeto Céo
 
 ## Tecnologias Utilizadas
 
-- **Linguagem**: Python 3.14.3
+- **Linguagem**: Python 3.12
 - **Banco de Dados**: DuckDB (Processamento analítico em disco de alta performance)
 - **Interface**: Streamlit
 - **Bibliotecas Auxiliares**: psutil e tqdm
@@ -34,6 +34,9 @@ Este projeto foi desenvolvido como parte do desafio técnico para o projeto Céo
 ## Como Executar
 
 Siga os passos de acordo com o seu sistema operacional para configurar o ambiente e iniciar a aplicação.
+
+> **Importante: Uso de Dados Locais (Opcional)**
+> Se você já possui os arquivos `.zip` dos Dados Abertos do CNPJ e deseja pular a etapa de download, basta criar uma pasta chamada `dados_raw` na raiz do projeto e colar todos os arquivos `.zip` dentro dela antes de executar o passo 3. O sistema reconhecerá os arquivos automaticamente.
 
 ### Passo 1: Clonar o repositório (Todos os sistemas)
 Abra o seu terminal e execute:
@@ -80,7 +83,7 @@ python main.py
 
 ### Passo 3: Utilizando o Sistema
 Ao executar o `main.py`, um menu interativo será exibido no terminal:
-1. **Baixar dados:** Executa a raspagem dos arquivos ZIP (Opcional se os arquivos já estiverem na pasta `dados_raw`).
+1. **Baixar dados:** Executa a raspagem dos arquivos ZIP (Pode ser ignorado se você seguiu o aviso de uso de dados locais acima).
 2. **Processar e Ingerir:** Cria o banco de dados `banco_cnpj.duckdb` estruturando as informações.
 3. **Iniciar Painel:** Abre a interface gráfica do Streamlit no seu navegador padrão.
 
