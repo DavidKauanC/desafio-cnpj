@@ -2,15 +2,15 @@ import streamlit as st
 import duckdb
 
 # Configuração inicial da página
-st.set_page_config(page_title="Consulta de CNPJ", page_icon="🏢", layout="wide")
+st.set_page_config(page_title="Consulta de CNPJ", layout="wide")
 
 # ==========================================
 # BARRA LATERAL (FILTROS ADICIONAIS - REQUISITO DO EDITAL)
 # ==========================================
-st.sidebar.title("🔍 Filtros Avançados")
+st.sidebar.title("Filtros Avançados")
 st.sidebar.markdown("Refine sua busca utilizando os parâmetros do edital.")
 
-st.sidebar.markdown("### 🏢 Filtro de Empresas")
+st.sidebar.markdown("### Filtro de Empresas")
 opcoes_porte = {
     "Todos": "", 
     "Não Informado": "00", 
@@ -21,7 +21,7 @@ opcoes_porte = {
 porte_selecionado = st.sidebar.selectbox("Porte da Empresa:", list(opcoes_porte.keys()))
 porte_filtro = opcoes_porte[porte_selecionado]
 
-st.sidebar.markdown("### 📍 Filtro de Filiais")
+st.sidebar.markdown("### Filtro de Filiais")
 
 # 1. Filtro de UF
 lista_ufs = ["Todas", "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"]
@@ -49,14 +49,14 @@ situacao_filtro = opcoes_situacao[situacao_selecionada]
 # ==========================================
 # CORPO PRINCIPAL DA APLICAÇÃO
 # ==========================================
-st.title("🏢 Consulta de Dados do CNPJ")
+st.title("Consulta de Dados do CNPJ")
 st.markdown("Busque por empresas, sócios e estabelecimentos com processamento DuckDB.")
 
 @st.cache_resource
 def conectar_banco():
     try:
         # Modo read_only garante que o banco não seja corrompido durante consultas
-        return duckdb.connect('banco_cnpj.duckdb', read_only=True)
+        return duckdb.connect('dados/banco_cnpj.duckdb', read_only=True)
     except Exception as e:
         st.error(f"Erro ao conectar no banco de dados: {e}")
         return None
@@ -119,8 +119,8 @@ if conn:
                 if empresa_selecionada:
                     cnpj_selecionado = empresa_selecionada.split(" - ").pop(0).strip()
                     
-                    # 👥 QUADRO DE SÓCIOS
-                    st.subheader("👥 Quadro de Sócios")
+                    # QUADRO DE SÓCIOS
+                    st.subheader("Quadro de Sócios")
                     query_socios = """
                         SELECT 
                             s.nome_socio, 
@@ -139,14 +139,21 @@ if conn:
                     else:
                         st.info("Nenhum sócio encontrado.")
 
-                    # 📍 ESTABELECIMENTOS (COM TODOS OS FILTROS DO EDITAL)
-                    st.subheader("📍 Filiais e Estabelecimentos")
+                    # ESTABELECIMENTOS (COM TODOS OS FILTROS DO EDITAL)
+                    st.subheader("Filiais e Estabelecimentos")
                     
                     query_filiais = """
                         SELECT 
                             est.cnpj_basico || est.cnpj_ordem || est.cnpj_dv AS cnpj_completo,
                             est.nome_fantasia,
-                            est.situacao_cadastral || ' (Motivo: ' || COALESCE(mot.descricao, 'N/A') || ')' AS situacao,
+                            CASE REPLACE(est.situacao_cadastral, '"', '')
+                                WHEN '01' THEN 'Nula'
+                                WHEN '02' THEN 'Ativa'
+                                WHEN '03' THEN 'Suspensa'
+                                WHEN '04' THEN 'Inapta'
+                                WHEN '08' THEN 'Baixada'
+                                ELSE est.situacao_cadastral 
+                            END || ' (Motivo: ' || COALESCE(mot.descricao, 'N/A') || ')' AS situacao,
                             est.cnae_principal || ' - ' || COALESCE(c.descricao, 'N/A') AS cnae,
                             est.tipo_logradouro || ' ' || est.logradouro || ', ' || est.numero AS endereco,
                             COALESCE(m.descricao, 'N/A') || '/' || REPLACE(est.uf, '"', '') AS cidade_uf
@@ -166,7 +173,7 @@ if conn:
                     if municipio_filtro:
                         query_filiais += " AND REPLACE(m.descricao, '\"', '') LIKE ?"
                         parametros_filiais.append(f"%{municipio_filtro}%")
-                    
+                        
                     if cnae_filtro:
                         # O filtro de CNAE busca tanto no código quanto na descrição traduzida
                         query_filiais += " AND (REPLACE(est.cnae_principal, '\"', '') LIKE ? OR c.descricao LIKE ?)"

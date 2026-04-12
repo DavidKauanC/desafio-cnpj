@@ -1,8 +1,19 @@
-venv/
-
+# Dados e Banco
+dados/
 dados_raw/
 *.duckdb
-*.duckdb.wal
+*.zip
+*.csv
 
+# Python
 __pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Streamlit e IDEs
 .streamlit/
+.vscode/
+.idea/
+.DS_Store

@@ -13,12 +13,27 @@ def obter_memoria_ram():
 
 def extrair_e_carregar():
     inicio = time.time()
-    print("Iniciando a criação do banco de dados DuckDB (Carga Completa - Big Data)...")
+    print("Iniciando a criacao do banco de dados DuckDB (Carga Completa - Big Data)...")
+    
+    # travas de memória
+    memoria_info = psutil.virtual_memory()
+    ram_disponivel_gb = memoria_info.available / (1024 ** 3)
+    limite_duckdb_gb = max(2, int(ram_disponivel_gb * 0.85)) 
+    nucleos_cpu = psutil.cpu_count(logical=False) or 4
+    
+    print(f"Hardware live: {ram_disponivel_gb:.1f}GB RAM livres | {nucleos_cpu} Cores")
+    print(f"Dedicando ao DuckDB: {limite_duckdb_gb}GB RAM | {nucleos_cpu} Threads")
+    # --- FIM: TRAVAS DE MEMORIA ---
     
     # Conecta ao banco de dados local
-    conn = duckdb.connect('banco_cnpj.duckdb')
+    os.makedirs('dados', exist_ok=True) # Garante que a pasta existe
+    conn = duckdb.connect('dados/banco_cnpj.duckdb')
     
-    # Dicionário com todas as tabelas, mapeamento de múltiplos arquivos (*) e layouts
+    # Aplicando as travas de limite de consumo
+    conn.execute(f"PRAGMA threads={nucleos_cpu};")
+    conn.execute(f"PRAGMA memory_limit='{limite_duckdb_gb}GB';")
+    
+    # Dicionario com todas as tabelas, mapeamento de multiplos arquivos (*) e layouts
     tabelas = {
         'empresas': ('Empresas*.zip', {
             'cnpj_basico': 'VARCHAR', 'razao_social': 'VARCHAR', 'natureza_juridica': 'VARCHAR',
@@ -65,35 +80,35 @@ def extrair_e_carregar():
         arquivos_encontrados = glob.glob(caminho_busca)
         
         if not arquivos_encontrados:
-            print(f"⚠️ Nenhum arquivo encontrado para a tabela {tabela.upper()}. Pulando...")
+            print(f"Nenhum arquivo encontrado para a tabela {tabela.upper()}. Pulando...")
             continue
             
         print(f"\n--- Iniciando Carga da tabela: {tabela.upper()} ({len(arquivos_encontrados)} arquivo(s)) ---")
         
-        # Apaga a tabela se ela já existir para não duplicar dados
+        # Apaga a tabela se ela ja existir para nao duplicar dados
         conn.execute(f"DROP TABLE IF EXISTS {tabela}")
         
-        # Variável de controle: O primeiro arquivo cria a tabela, os demais apenas inserem dados
+        # Variavel de controle: O primeiro arquivo cria a tabela, os demais apenas inserem dados
         primeiro_arquivo = True
 
         for caminho_zip in arquivos_encontrados:
             nome_zip = os.path.basename(caminho_zip)
             print(f"  -> Processando arquivo {nome_zip}...")
             
-            # 1. Extração segura (Proteção contra listas)
+            # 1. Extracao segura (Protecao contra listas)
             with zipfile.ZipFile(caminho_zip, 'r') as zip_ref:
                 lista_arquivos = zip_ref.namelist()
                 nome_arquivo_extraido = lista_arquivos.pop(0)
                 zip_ref.extractall('dados_raw')
             
-            # Ajuste de barras para o Windows e formatação das colunas para o DuckDB
+            # Ajuste de barras para o Windows e formatacao das colunas para o DuckDB
             caminho_csv = os.path.join('dados_raw', nome_arquivo_extraido).replace('\\', '/')
             colunas_str = ", ".join([f"'{k}': '{v}'" for k, v in colunas.items()])
             
-            # 2. Ingestão com tratamento de exceções (try/except)
+            # 2. Ingestao com tratamento de excecoes (try/except)
             try:
                 if primeiro_arquivo:
-                    # No 1º arquivo nós CRIAMOS a tabela e definimos a estrutura
+                    # No 1o arquivo nos CRIAMOS a tabela e definimos a estrutura
                     query = f"""
                         CREATE TABLE {tabela} AS 
                         SELECT * FROM read_csv('{caminho_csv}', delim=';', header=False, 
@@ -102,7 +117,7 @@ def extrair_e_carregar():
                     conn.execute(query)
                     primeiro_arquivo = False
                 else:
-                    # Nos próximos arquivos, nós apenas ANEXAMOS os dados à tabela já existente
+                    # Nos proximos arquivos, nos apenas ANEXAMOS os dados a tabela ja existente
                     query = f"""
                         INSERT INTO {tabela} 
                         SELECT * FROM read_csv('{caminho_csv}', delim=';', header=False, 
@@ -110,21 +125,21 @@ def extrair_e_carregar():
                     """
                     conn.execute(query)
                 
-                # 3. Monitoramento de memória profissional
+                # 3. Monitoramento de memoria profissional
                 mem_mb = obter_memoria_ram()
-                print(f"    ✅ Tabela atualizada com sucesso. [Uso atual de RAM: {mem_mb:.2f} MB]")
+                print(f"    Tabela atualizada com sucesso. [Uso atual de RAM: {mem_mb:.2f} MB]")
                 
             except Exception as e:
-                print(f"    ❌ Erro crítico ao tentar processar o CSV do arquivo {nome_zip}: {e}")
+                print(f"    Erro critico ao tentar processar o CSV do arquivo {nome_zip}: {e}")
             
-            # O bloco 'finally' garante que o CSV temporário seja apagado do HD mesmo se der erro
+            # O bloco 'finally' garante que o CSV temporario seja apagado do HD mesmo se der erro
             finally:
                 if os.path.exists(caminho_csv):
                     os.remove(caminho_csv)
         
     conn.close()
     tempo_total = (time.time() - inicio) / 60
-    print(f"\n🚀 CARGA TOTAL FINALIZADA COM SUCESSO EM {tempo_total:.2f} MINUTOS!")
+    print(f"\nCARGA TOTAL FINALIZADA COM SUCESSO EM {tempo_total:.2f} MINUTOS!")
 
 if __name__ == '__main__':
     extrair_e_carregar()
