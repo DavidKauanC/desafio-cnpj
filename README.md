@@ -41,8 +41,8 @@ Siga os passos de acordo com o seu sistema operacional para configurar o ambient
 ### Passo 1: Clonar o repositório (Todos os sistemas)
 Abra o seu terminal e execute:
 ```bash
-git clone [https://github.com/seu-usuario/seu-repositorio.git](https://github.com/seu-usuario/seu-repositorio.git)
-cd seu-repositorio
+git clone https://github.com/DavidKauanC/desafio-cnpj.git
+cd desafio-cnpj
 ```
 
 ---
