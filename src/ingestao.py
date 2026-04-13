@@ -105,14 +105,15 @@ def extrair_e_carregar():
             caminho_csv = os.path.join('dados_raw', nome_arquivo_extraido).replace('\\', '/')
             colunas_str = ", ".join([f"'{k}': '{v}'" for k, v in colunas.items()])
             
-            # 2. Ingestao com tratamento de excecoes (try/except)
+            # 2. Ingestao com tratamento de excecoes (try/except) blindado com quote e escape
             try:
                 if primeiro_arquivo:
                     # No 1o arquivo nos CRIAMOS a tabela e definimos a estrutura
                     query = f"""
                         CREATE TABLE {tabela} AS 
                         SELECT * FROM read_csv('{caminho_csv}', delim=';', header=False, 
-                        columns={{{colunas_str}}}, encoding='ISO_8859_1', ignore_errors=true)
+                        columns={{{colunas_str}}}, encoding='ISO_8859_1', 
+                        quote='"', escape='"', ignore_errors=true)
                     """
                     conn.execute(query)
                     primeiro_arquivo = False
@@ -121,7 +122,8 @@ def extrair_e_carregar():
                     query = f"""
                         INSERT INTO {tabela} 
                         SELECT * FROM read_csv('{caminho_csv}', delim=';', header=False, 
-                        columns={{{colunas_str}}}, encoding='ISO_8859_1', ignore_errors=true)
+                        columns={{{colunas_str}}}, encoding='ISO_8859_1', 
+                        quote='"', escape='"', ignore_errors=true)
                     """
                     conn.execute(query)
                 

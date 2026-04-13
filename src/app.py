@@ -4,9 +4,7 @@ import duckdb
 # Configuração inicial da página
 st.set_page_config(page_title="Consulta de CNPJ", layout="wide")
 
-# ==========================================
-# BARRA LATERAL (FILTROS ADICIONAIS - REQUISITO DO EDITAL)
-# ==========================================
+
 st.sidebar.title("Filtros Avançados")
 st.sidebar.markdown("Refine sua busca utilizando os parâmetros do edital.")
 
